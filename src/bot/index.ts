@@ -6,7 +6,7 @@ import { analysByGivenTimeFrame } from "../utils/analysByGivenTimeFrame.js";
 import { CHAT_ID } from "../envConstants.js";
 // types
 import { type ClassCode } from "../../types/classcode";
-import { type TimeFrame } from "../utils/macd";
+import { type TimeFrame } from "../utils/macdAndLastPrice.js";
 
 if (!BotToken) throw new Error("Bot token needed.");
 export const bot = new Bot(BotToken);
@@ -18,7 +18,6 @@ bot.api.setMyCommands([
     { command: "myid", description: "Sends you your ID." },
 ]);
 
-// Handle the /start command.
 bot.command("start", (ctx) => ctx.reply("Welcome! Up and running."));
 
 bot.command("getmacdzip", async (ctx) => {

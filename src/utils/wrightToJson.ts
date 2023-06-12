@@ -1,4 +1,4 @@
-import { getMACD, getCandles, getCloseValues } from "./getDataFromTinkoff.js";
+import { getMACD, getCandles, getCloseValues } from "./helpers.js";
 import { promises as fs } from "fs";
 import { type ClassCode } from "../../types/classcode";
 

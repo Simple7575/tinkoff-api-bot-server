@@ -1,9 +1,9 @@
-import { api as tinfoffApi } from "./getDataFromTinkoff.js";
-import { getFigiFromTicker } from "./getDataFromTinkoff.js";
-import { macdAndLastPrice } from "./macd.js";
+import { api as tinfoffApi } from "./helpers.js";
+import { getFigiFromTicker } from "./helpers.js";
+import { macdAndLastPrice } from "./macdAndLastPrice.js";
 import { tickersAndClasscodes } from "./tickersAndClasscodes.js";
 // types
-import { type TimeFrame } from "./macd.js";
+import { type TimeFrame } from "./macdAndLastPrice.js";
 
 export const analysByGivenTimeFrame = async (timeFrame: TimeFrame = "Day") => {
     const messages = [];

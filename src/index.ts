@@ -25,23 +25,23 @@ app.listen(port, () => {
         console.log("1 min");
     });
 
-    // scheduleJob("At every 5th minute.", "*/5 * * * *", () => {
-    //     analysAndSendMessage("FiveMinutes");
-    //     console.log("5 min");
-    // });
+    scheduleJob("At every 5th minute.", "*/5 * * * *", () => {
+        analysAndSendMessage("FiveMinutes");
+        console.log("5 min");
+    });
 
-    // scheduleJob("At every 15th minute.", "*/15 * * * *", () => {
-    //     analysAndSendMessage("FifteenMinutes");
-    //     console.log("15 min");
-    // });
+    scheduleJob("At every 15th minute.", "*/15 * * * *", () => {
+        analysAndSendMessage("FifteenMinutes");
+        console.log("15 min");
+    });
 
-    // scheduleJob("At every hour.", "0 * * * *", () => {
-    //     analysAndSendMessage("Hour");
-    //     console.log("Hour");
-    // });
+    scheduleJob("At every hour.", "0 * * * *", () => {
+        analysAndSendMessage("Hour");
+        console.log("Hour");
+    });
 
-    // scheduleJob("Every day at 1:50AM.", "50 1 * * *", () => {
-    //     analysAndSendMessage("Day");
-    //     console.log("day");
-    // });
+    scheduleJob("Every day at 1:50AM.", "50 1 * * *", () => {
+        analysAndSendMessage("Day");
+        console.log("day");
+    });
 });

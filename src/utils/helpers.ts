@@ -78,21 +78,6 @@ export const getMACD = async (ticker: string, classCode: ClassCode) => {
     return macd;
 };
 
-// const macdData: { macd: number[]; macd_signal: number[]; macd_histogram: number[] } = {
-//     macd: [],
-//     macd_signal: [],
-//     macd_histogram: [],
-// };
-// tulind.indicators.macd.indicator([close], [12, 26, 9], (err: any, res: any) => {
-//     macdData.macd.push(...res[0]);
-//     macdData.macd_signal.push(...res[1]);
-//     macdData.macd_histogram.push(...res[2]);
-// });
-
-// console.log(close);
-// console.log(calculateMACD(close));
-// console.log(tulind.indicators.macd);
-
 // type Something<Name extends string> = Name extends `Hello your ${infer A}` ? A : never
 
 // type S = Something<"Hello your John">

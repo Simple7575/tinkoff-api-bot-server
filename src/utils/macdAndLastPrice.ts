@@ -1,5 +1,5 @@
 import { CandleInterval } from "tinkoff-invest-api/cjs/generated/marketdata.js";
-import { api as tinkoffApi } from "./getDataFromTinkoff.js";
+import { api as tinkoffApi } from "./helpers.js";
 import { MACD } from "technicalindicators";
 import ms from "ms";
 
