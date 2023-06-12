@@ -2,14 +2,14 @@
 // import tulind from "tulind";
 import { TinkoffInvestApi } from "tinkoff-invest-api";
 import { MACD } from "technicalindicators";
-import { GetCandlesRequest, CandleInterval } from "tinkoff-invest-api/cjs/generated/marketdata.js";
+import { CandleInterval } from "tinkoff-invest-api/cjs/generated/marketdata.js";
 import { type ClassCode } from "../../types/classcode";
 
 import { TinkofAPIKey } from "../envConstants.js";
 if (!TinkofAPIKey) throw new Error("Tinkoff API key needed.");
-const api = new TinkoffInvestApi({ token: TinkofAPIKey });
+export const api = new TinkoffInvestApi({ token: TinkofAPIKey });
 
-const getFigiFromTicker = async (ticker: string, classCode: ClassCode) => {
+export const getFigiFromTicker = async (ticker: string, classCode: ClassCode) => {
     const { instrument } = await api.instruments.getInstrumentBy({
         idType: 2,
         classCode,

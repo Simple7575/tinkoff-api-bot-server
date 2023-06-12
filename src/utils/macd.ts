@@ -1,52 +1,69 @@
-export const calculateMACD = (closingPrices: number[]) => {
-    const shortPeriod = 12; // Shorter EMA period (usually 12)
-    const longPeriod = 26; // Longer EMA period (usually 26)
-    const signalPeriod = 9; // Signal line EMA period (usually 9)
+import { CandleInterval } from "tinkoff-invest-api/cjs/generated/marketdata.js";
+import { api as tinkoffApi } from "./getDataFromTinkoff.js";
+import { MACD } from "technicalindicators";
+import ms from "ms";
 
-    // Calculate the 12-day EMA
-    const calculateEMA12 = (prices: number[]) => {
-        const smoothingFactor = 2 / (shortPeriod + 1);
-        let ema = prices[0];
-        for (let i = 1; i < prices.length; i++) {
-            ema = (prices[i] - ema) * smoothingFactor + ema;
-        }
-        return ema;
+const timeFrameMap = {
+    Minute: {
+        interval: CandleInterval.CANDLE_INTERVAL_1_MIN,
+        from: new Date(new Date().getTime() - ms("1h")),
+    },
+    FiveMinutes: {
+        interval: CandleInterval.CANDLE_INTERVAL_5_MIN,
+        from: new Date(new Date().getTime() - ms("150min")),
+    },
+    FifteenMinutes: {
+        interval: CandleInterval.CANDLE_INTERVAL_15_MIN,
+        from: new Date(new Date().getTime() - ms("450min")),
+    },
+    Hour: {
+        interval: CandleInterval.CANDLE_INTERVAL_HOUR,
+        from: new Date(new Date().getTime() - ms("30h")),
+    },
+    Day: {
+        interval: CandleInterval.CANDLE_INTERVAL_DAY,
+        from: new Date(new Date().getTime() - ms("60 days")),
+    },
+};
+
+export type TimeFrame = keyof typeof timeFrameMap;
+
+export const macdAndLastPrice = async (figi: string, timeFrame: TimeFrame = "Day") => {
+    // получить 1-минутные свечи за последние 5 мин для акций Тинкофф Групп
+    const { candles } = await tinkoffApi.marketdata.getCandles({
+        figi: figi,
+        interval: timeFrameMap[timeFrame].interval,
+        from: timeFrameMap[timeFrame].from,
+        to: new Date(),
+    });
+
+    // Cleaning weekends from candles
+    const cleanedCandles = candles.filter((candle) => {
+        if (!candle.time) throw new Error("Ther is no time in this candle.");
+        const day = new Date(candle.time).getDay();
+
+        if (day === 0 || day === 6) return false;
+
+        return true;
+    });
+
+    const close = cleanedCandles.map((candle) => {
+        if (candle.close?.units === undefined || candle.close?.nano === undefined) return;
+        const result = candle.close?.units + candle.close?.nano / 1e9;
+        return result;
+    }) as number[];
+
+    const macdInput = {
+        values: close,
+        fastPeriod: 12,
+        slowPeriod: 26,
+        signalPeriod: 9,
+        SimpleMAOscillator: false,
+        SimpleMASignal: false,
     };
 
-    // Calculate the 26-day EMA
-    const calculateEMA26 = (prices: number[]) => {
-        const smoothingFactor = 2 / (longPeriod + 1);
-        let ema = prices[0];
-        for (let i = 1; i < prices.length; i++) {
-            ema = (prices[i] - ema) * smoothingFactor + ema;
-        }
-        return ema;
-    };
+    const macd = MACD.calculate(macdInput);
+    const price = close.at(-1);
 
-    // Calculate the MACD line
-    const calculateMACDLine = (prices: number[]) => {
-        const ema12 = calculateEMA12(prices);
-        const ema26 = calculateEMA26(prices);
-        return ema12 - ema26;
-    };
-
-    // Calculate the signal line
-    const calculateSignalLine = (prices: number[]) => {
-        const macdLine = calculateMACDLine(prices);
-        const smoothingFactor = 2 / (signalPeriod + 1);
-        let signalLine = macdLine;
-        for (let i = 1; i < prices.length; i++) {
-            signalLine = (macdLine - signalLine) * smoothingFactor + signalLine;
-        }
-        return signalLine;
-    };
-
-    // Calculate the MACD histogram
-    const calculateMACDHistogram = (prices: number[]) => {
-        const macdLine = calculateMACDLine(prices);
-        const signalLine = calculateSignalLine(prices);
-        return macdLine - signalLine;
-    };
-
-    return calculateMACDHistogram(closingPrices);
+    return { macd, price };
 };
