@@ -1,4 +1,3 @@
-import { api as tinfoffApi } from "./helpers.js";
 import { getFigiFromTicker } from "./helpers.js";
 import { macdAndLastPrice } from "./macdAndLastPrice.js";
 import { tickersAndClasscodes } from "./tickersAndClasscodes.js";

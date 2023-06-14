@@ -2,7 +2,7 @@
 // import tulind from "tulind";
 import { TinkoffInvestApi } from "tinkoff-invest-api";
 import { MACD } from "technicalindicators";
-import { CandleInterval } from "tinkoff-invest-api/cjs/generated/marketdata.js";
+import { CandleInterval, HistoricCandle } from "tinkoff-invest-api/cjs/generated/marketdata.js";
 import { type ClassCode } from "../../types/classcode";
 
 import { TinkofAPIKey } from "../envConstants.js";
@@ -21,14 +21,16 @@ export const getFigiFromTicker = async (ticker: string, classCode: ClassCode) =>
     return instrument.figi;
 };
 
-export const getCandles = async (ticker: string, classCode: ClassCode) => {
-    const figi = await getFigiFromTicker(ticker, classCode);
-
+export const getCleanedCandles = async (
+    interval: CandleInterval,
+    from: "-1d" | "-1y",
+    figi: string
+) => {
     // получить 1-минутные свечи за последние 5 мин для акций Тинкофф Групп
     const { candles } = await api.marketdata.getCandles({
         figi: figi,
-        interval: CandleInterval.CANDLE_INTERVAL_DAY,
-        ...api.helpers.fromTo("-1y"), // <- удобный хелпер для получения { from, to }
+        interval: interval,
+        ...api.helpers.fromTo(from), // <- удобный хелпер для получения { from, to }
     });
 
     // Cleaning weekends from candles
@@ -44,23 +46,17 @@ export const getCandles = async (ticker: string, classCode: ClassCode) => {
     return cleanedCandles;
 };
 
-export const getCloseValues = async (ticker: string, classCode: ClassCode) => {
-    const candles = await getCandles(ticker, classCode);
-
+export const getCloseValues = async (candles: HistoricCandle[]) => {
     const close = candles.map((candle) => {
         if (candle.close?.units === undefined || candle.close?.nano === undefined) return;
         const result = candle.close?.units + candle.close?.nano / 1e9;
         return result;
     }) as number[];
 
-    // console.log(candles.length);
-
     return close;
 };
 
-export const getMACD = async (ticker: string, classCode: ClassCode) => {
-    const close = await getCloseValues(ticker, classCode);
-
+export const getMACD = async (close: number[]) => {
     const macdInput = {
         values: close,
         fastPeriod: 12,
@@ -71,9 +67,6 @@ export const getMACD = async (ticker: string, classCode: ClassCode) => {
     };
 
     const macd = MACD.calculate(macdInput);
-
-    // console.log(macd);
-    // console.log(close);
 
     return macd;
 };

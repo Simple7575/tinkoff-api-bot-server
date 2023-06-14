@@ -3,26 +3,26 @@ import { api as tinkoffApi } from "./helpers.js";
 import { MACD } from "technicalindicators";
 import ms from "ms";
 
-const timeFrameMap = {
+export const timeFrameMap = {
     Minute: {
         interval: CandleInterval.CANDLE_INTERVAL_1_MIN,
-        from: new Date(new Date().getTime() - ms("1h")),
+        from: new Date(new Date().getTime() - ms("1day") + ms("1m")),
     },
     FiveMinutes: {
         interval: CandleInterval.CANDLE_INTERVAL_5_MIN,
-        from: new Date(new Date().getTime() - ms("150min")),
+        from: new Date(new Date().getTime() - ms("1day") + ms("1m")),
     },
     FifteenMinutes: {
         interval: CandleInterval.CANDLE_INTERVAL_15_MIN,
-        from: new Date(new Date().getTime() - ms("450min")),
+        from: new Date(new Date().getTime() - ms("1day") + ms("1m")),
     },
     Hour: {
         interval: CandleInterval.CANDLE_INTERVAL_HOUR,
-        from: new Date(new Date().getTime() - ms("30h")),
+        from: new Date(new Date().getTime() - ms("7 days") + ms("1m")),
     },
     Day: {
         interval: CandleInterval.CANDLE_INTERVAL_DAY,
-        from: new Date(new Date().getTime() - ms("60 days")),
+        from: new Date(new Date().getTime() - ms("1y") + ms("1m")),
     },
 };
 
@@ -53,8 +53,12 @@ export const macdAndLastPrice = async (figi: string, timeFrame: TimeFrame = "Day
         return result;
     }) as number[];
 
+    const lastTwentiSixClosed = close.slice(close.length - 26);
+
+    console.log(lastTwentiSixClosed);
+
     const macdInput = {
-        values: close,
+        values: lastTwentiSixClosed,
         fastPeriod: 12,
         slowPeriod: 26,
         signalPeriod: 9,

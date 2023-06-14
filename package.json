@@ -38,6 +38,7 @@
     },
     "dependencies": {
         "@types/cors": "^2.8.13",
+        "axios": "^1.4.0",
         "cors": "^2.8.5",
         "dotenv": "^16.1.4",
         "express": "^4.18.2",
@@ -48,6 +49,7 @@
         "technicalindicators": "^3.1.0",
         "tinkoff-invest-api": "^5.0.0",
         "tulind": "^0.8.20",
+        "yahoo-finance2": "^2.4.1",
         "zip-a-folder": "^2.0.0"
     }
 }

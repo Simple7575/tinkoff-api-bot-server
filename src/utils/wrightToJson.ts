@@ -1,5 +1,7 @@
-import { getMACD, getCandles, getCloseValues } from "./helpers.js";
+import { getMACD, getCleanedCandles, getCloseValues, getFigiFromTicker } from "./helpers.js";
 import { promises as fs } from "fs";
+import { timeFrameMap } from "./macdAndLastPrice.js";
+// types
 import { type ClassCode } from "../../types/classcode";
 
 export const createFolderAndWrightJson = async (ticker: string, classCode: ClassCode) => {
@@ -12,9 +14,10 @@ export const createFolderAndWrightJson = async (ticker: string, classCode: Class
         .replaceAll(" ", "");
     const folder = `./jsons/date-${date}`;
 
-    const macd = await getMACD(ticker, classCode);
-    const candles = await getCandles(ticker, classCode);
-    const close = await getCloseValues(ticker, classCode);
+    const figi = await getFigiFromTicker("CCL", "SPBXM");
+    const candles = await getCleanedCandles(timeFrameMap.Minute.interval, "-1d", figi);
+    const close = await getCloseValues(candles);
+    const macd = await getMACD(close);
 
     try {
         await fs.mkdir(folder);
