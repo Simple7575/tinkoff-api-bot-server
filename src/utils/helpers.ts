@@ -1,4 +1,5 @@
 import { TinkoffInvestApi } from "tinkoff-invest-api";
+import yahooFinance from "yahoo-finance2";
 import { CandleInterval, HistoricCandle } from "tinkoff-invest-api/cjs/generated/marketdata.js";
 import { MACD } from "technicalindicators";
 import axios from "axios";
@@ -28,7 +29,7 @@ export const IntervalMapTinkoff = {
 };
 
 export type IntervalMapTinkoffType = typeof IntervalMapTinkoff;
-export type Interval = keyof IntervalMapTinkoffType;
+export type IntervalTinkoff = keyof IntervalMapTinkoffType;
 
 export const getFigiFromTicker = async (ticker: string, classCode: ClassCode) => {
     const { instrument } = await api.instruments.getInstrumentBy({
@@ -44,7 +45,7 @@ export const getFigiFromTicker = async (ticker: string, classCode: ClassCode) =>
 
 export const getCleanedCandlesTinkoff = async (
     interval: CandleInterval,
-    from: Interval,
+    from: IntervalTinkoff,
     figi: string
 ) => {
     const { candles } = await api.marketdata.getCandles({
@@ -67,7 +68,7 @@ export const getCleanedCandlesTinkoff = async (
 };
 
 export const getCleanedCandlesTinkoffRest = async (
-    interval: Interval,
+    interval: IntervalTinkoff,
     figi: string,
     base = new Date()
 ) => {
@@ -105,7 +106,7 @@ export const getCleanedCandlesTinkoffRest = async (
     return cleanedCandles;
 };
 
-export const glueCandleBatches = async (interval: Interval, figi: string) => {
+export const glueCandleBatches = async (interval: IntervalTinkoff, figi: string) => {
     try {
         const promise1 = getCleanedCandlesTinkoffRest("1m", figi, new Date(Date.now() - ms("1d")));
 
@@ -148,6 +149,54 @@ export const getAllValues = (candles: HistoricCandle[]) => {
     }
 
     return values;
+};
+
+// Yahoo
+export const IntervalMapYahoo = {
+    "1m": { interval: "1m", from: "1d" },
+    "2m": { interval: "2m", from: "1d" },
+    "5m": { interval: "5m", from: "1d" },
+    "15m": { interval: "15m", from: "1d" },
+    "30m": { interval: "30m", from: "2 days" },
+    "1h": { interval: "1h", from: "7 days" },
+    "1d": { interval: "1d", from: "1y" },
+    "5d": { interval: "5d", from: "30 days" },
+    "1wk": { interval: "1wk", from: "1y" },
+    "1mo": { interval: "1mo", from: "2y" },
+    "3mo": { interval: "3mo", from: "10y" },
+} as const;
+
+export type IntervalMapYahooType = typeof IntervalMapYahoo;
+export type IntervalYahoo = keyof IntervalMapYahooType;
+
+export const getCandlesYahoo = async (interval: IntervalYahoo, ticker: string) => {
+    console.log(new Date(Date.now() - ms(IntervalMapYahoo[interval].from)));
+    let result;
+    try {
+        result = await yahooFinance._chart(ticker, {
+            // period1: "2023-06-12",
+            period1: new Date(Date.now() - ms(IntervalMapYahoo[interval].from)),
+            return: "object" /* ... */,
+            interval: IntervalMapYahoo[interval].interval,
+        });
+
+        return result.indicators.quote[0];
+        // console.log(indicators.adjclose[0].adjclose);
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log(error.message);
+        }
+        // @ts-expect-error
+        result = error.result;
+    }
+
+    const validRanges = ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"];
+
+    if (result.indicators) {
+        return result.indicators.quote[0];
+    } else {
+        throw new Error("Something wrong in Yahoo.");
+    }
 };
 
 export const getMACD = async (close: number[]) => {

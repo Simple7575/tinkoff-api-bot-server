@@ -3,6 +3,7 @@ import cors from "cors";
 import { bot } from "./bot/index.js";
 import { PORT } from "./envConstants.js";
 import { getMACDTinkoff } from "./handlers/getMACDTinkoff.js";
+import { getMACDYahoo } from "./handlers/getMACDYahoo.js";
 
 import { scheduleJob } from "node-schedule";
 import { analysAndSendMessage } from "./bot/index.js";
@@ -18,7 +19,8 @@ app.get("/", async (req, res) => {
     res.status(200).json("Welcome");
 });
 
-app.get("/macd", getMACDTinkoff);
+app.get("/macd/tinkoff", getMACDTinkoff);
+app.get("/macd/yahoo", getMACDYahoo);
 
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);

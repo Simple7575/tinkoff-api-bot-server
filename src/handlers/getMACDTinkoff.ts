@@ -11,15 +11,16 @@ import { IntervalMapTinkoff } from "../utils/helpers.js";
 import { CandleInterval } from "tinkoff-invest-api/cjs/generated/marketdata.js";
 // types
 import { type ClassCode } from "../../types/classcode.js";
-import { type Interval } from "../utils/helpers.js";
+import { type IntervalTinkoff } from "../utils/helpers.js";
 import { wrightToJson } from "../utils/wrightToJson.js";
 
-const isIntervalType = (interval: any): interval is Interval => interval in IntervalMapTinkoff;
+const isIntervalType = (interval: any): interval is IntervalTinkoff =>
+    interval in IntervalMapTinkoff;
 const isClassCodeType = (classCode: any): classCode is ClassCode =>
     classCode === "TQBR" || classCode === "SPBXM";
 
 export const getMACDTinkoff = async (req: Request, res: Response) => {
-    const { interval } = req.query;
+    const { intervalTinkoff: interval } = req.query;
     const { ticker } = req.query;
     const { classcode } = req.query;
 
