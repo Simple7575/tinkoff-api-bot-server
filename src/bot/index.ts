@@ -1,7 +1,7 @@
 import { Bot, InputFile } from "grammy";
 import { BotToken, TinkofAPIKey } from "../envConstants.js";
 import { zipFolder } from "../utils/zipFolder.js";
-import { createFolderAndWrightJson } from "../utils/wrightToJson.js";
+import { createFolderAndWrightJson, wrightToJson } from "../utils/wrightToJson.js";
 import { analysByGivenTimeFrame } from "../utils/analysByGivenTimeFrame.js";
 import { CHAT_ID } from "../envConstants.js";
 import axios from "axios";
@@ -11,7 +11,14 @@ import { promises as fs } from "fs";
 import { type ClassCode } from "../../types/classcode";
 import { type TimeFrame } from "../utils/macdAndLastPrice.js";
 
-import { getCleanedCandles, getCloseValues, getFigiFromTicker, getMACD } from "../utils/helpers.js";
+import {
+    getCleanedCandlesTinkoff,
+    getCleanedCandlesTinkoffRest,
+    getCloseValues,
+    getFigiFromTicker,
+    getMACD,
+    glueCandleBatches,
+} from "../utils/helpers.js";
 import { MACD } from "technicalindicators";
 import { CandleInterval } from "tinkoff-invest-api/cjs/generated/marketdata.js";
 import { api as tinkoffAPI } from "../utils/helpers.js";
@@ -81,28 +88,16 @@ bot.command("figi", async (ctx) => {
 });
 
 bot.command("rest", async (ctx) => {
-    const body = {
-        figi: "BBG000BF6LY3",
-        from: timeFrameMap.Minute.from,
-        to: new Date(),
-        interval: CandleInterval.CANDLE_INTERVAL_1_MIN,
-        instrumentId: "BBG000BF6LY3",
-    };
+    const figi = "BBG000BF6LY3";
 
     try {
-        const { data } = await axios.post(
-            "https://invest-public-api.tinkoff.ru/rest/tinkoff.public.invest.api.contract.v1.MarketDataService/GetCandles",
-            JSON.stringify(body),
-            {
-                headers: {
-                    Accept: "application/json",
-                    Authorization: `Bearer ${TinkofAPIKey}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-
-        console.log(data);
+        // const candles = await glueCandleBatches("1m", figi);
+        const candles = await getCleanedCandlesTinkoffRest("1d", figi);
+        if (!candles) {
+            console.log("no candles");
+            return;
+        }
+        wrightToJson(candles);
     } catch (error) {
         if (error instanceof Error) {
             console.log(error.message);
@@ -113,8 +108,8 @@ bot.command("rest", async (ctx) => {
 bot.command("getmacdtocompare", async (ctx) => {
     try {
         const figi = await getFigiFromTicker("CCL", "SPBXM");
-        const candles = await getCleanedCandles(timeFrameMap.Day.interval, "-1d", figi);
-        const close = await getCloseValues(candles);
+        const candles = await getCleanedCandlesTinkoff(timeFrameMap.Day.interval, "1d", figi);
+        const close = getCloseValues(candles);
         const macd = await getMACD(close);
 
         console.log(candles.length);

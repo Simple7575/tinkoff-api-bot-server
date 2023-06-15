@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { bot } from "./bot/index.js";
 import { PORT } from "./envConstants.js";
-import { getMACD } from "./handlers/getMacd.js";
+import { getMACDTinkoff } from "./handlers/getMACDTinkoff.js";
 
 import { scheduleJob } from "node-schedule";
 import { analysAndSendMessage } from "./bot/index.js";
@@ -18,7 +18,7 @@ app.get("/", async (req, res) => {
     res.status(200).json("Welcome");
 });
 
-app.get("/macd", getMACD);
+app.get("/macd", getMACDTinkoff);
 
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);

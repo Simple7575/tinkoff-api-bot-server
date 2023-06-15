@@ -1,4 +1,4 @@
-import { getMACD, getCleanedCandles, getCloseValues, getFigiFromTicker } from "./helpers.js";
+import { getMACD, getCleanedCandlesTinkoff, getCloseValues, getFigiFromTicker } from "./helpers.js";
 import { promises as fs } from "fs";
 import { timeFrameMap } from "./macdAndLastPrice.js";
 // types
@@ -15,7 +15,7 @@ export const createFolderAndWrightJson = async (ticker: string, classCode: Class
     const folder = `./jsons/date-${date}`;
 
     const figi = await getFigiFromTicker("CCL", "SPBXM");
-    const candles = await getCleanedCandles(timeFrameMap.Minute.interval, "-1d", figi);
+    const candles = await getCleanedCandlesTinkoff(timeFrameMap.Minute.interval, "10m", figi);
     const close = await getCloseValues(candles);
     const macd = await getMACD(close);
 
@@ -29,6 +29,16 @@ export const createFolderAndWrightJson = async (ticker: string, classCode: Class
         await fs.writeFile(`${folder}/close-${ticker}.json`, JSON.stringify(close, null, 4));
 
         return folder;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const wrightToJson = async (data: Object) => {
+    try {
+        console.log("Start creation.");
+
+        await fs.writeFile(`./jsons/${Date.now()}.json`, JSON.stringify(data, null, 4));
     } catch (error) {
         console.log(error);
     }
