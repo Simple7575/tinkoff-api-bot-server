@@ -4,25 +4,20 @@ import {
     getFigiFromTicker,
     getMACD,
     glueCandleBatches,
-} from "./helpers.js";
-import { tickersAndClasscodes } from "./tickersAndClasscodes.js";
+} from "../helpers.js";
+import { tickersAndClasscodes } from "../tickersAndClasscodes.js";
 // types
-import { type IntervalTinkoff } from "./helpers.js";
+import { type IntervalTinkoff } from "../helpers.js";
 
-export const analysByGivenTimeFrame = async (interval: IntervalTinkoff = "1d") => {
+export const analyseHourInterval = async (interval: IntervalTinkoff = "1h") => {
     const messages = [];
 
     for (const ticker of tickersAndClasscodes) {
         let message = "";
 
         const figi = await getFigiFromTicker(ticker.ticker, ticker.classCode);
-        let candles;
 
-        if (interval === "1m" || interval === "5m") {
-            candles = await glueCandleBatches(interval, figi);
-        } else {
-            candles = await getCleanedCandlesTinkoffRest(interval, figi);
-        }
+        const candles = await getCleanedCandlesTinkoffRest(interval, figi);
 
         const close = getCloseValues(candles!);
 
@@ -47,8 +42,6 @@ export const analysByGivenTimeFrame = async (interval: IntervalTinkoff = "1d") =
             messages.push(message);
             console.log("Sell");
         } else {
-            // message = `${interval} ${ticker.ticker} ${price} No Signal❌`;
-            // messages.push(message);
             console.log("No signal");
         }
     }
