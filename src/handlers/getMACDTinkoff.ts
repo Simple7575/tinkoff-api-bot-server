@@ -5,14 +5,13 @@ import {
     getCleanedCandlesTinkoffRest,
     getCloseValues,
     getFigiFromTicker,
+    getMACD,
     glueCandleBatches,
 } from "../utils/helpers.js";
 import { IntervalMapTinkoff } from "../utils/helpers.js";
-import { CandleInterval } from "tinkoff-invest-api/cjs/generated/marketdata.js";
 // types
 import { type ClassCode } from "../../types/classcode.js";
 import { type IntervalTinkoff } from "../utils/helpers.js";
-import { wrightToJson } from "../utils/wrightToJson.js";
 
 const isIntervalType = (interval: any): interval is IntervalTinkoff =>
     interval in IntervalMapTinkoff;
@@ -41,7 +40,7 @@ export const getMACDTinkoff = async (req: Request, res: Response) => {
         const figi = await getFigiFromTicker(ticker as string, classcode);
         let candles;
 
-        if (interval === "1m") {
+        if (interval === "1m" || interval === "5m") {
             candles = await glueCandleBatches(interval, figi);
         } else {
             candles = await getCleanedCandlesTinkoffRest(interval, figi);
@@ -49,15 +48,7 @@ export const getMACDTinkoff = async (req: Request, res: Response) => {
 
         const close = getCloseValues(candles!);
 
-        const macdInput = {
-            values: close,
-            fastPeriod: 12,
-            slowPeriod: 26,
-            signalPeriod: 9,
-            SimpleMAOscillator: false,
-            SimpleMASignal: false,
-        };
-        const macd = MACD.calculate(macdInput);
+        const macd = getMACD(close);
 
         const allValues = getAllValues(candles!);
 

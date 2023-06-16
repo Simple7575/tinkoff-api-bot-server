@@ -8,6 +8,7 @@ import ms from "ms";
 import { TinkofAPIKey } from "../envConstants.js";
 // types
 import { type ClassCode } from "../../types/classcode";
+import { wrightToJson } from "./wrightToJson.js";
 
 if (!TinkofAPIKey) throw new Error("Tinkoff API key needed.");
 export const api = new TinkoffInvestApi({ token: TinkofAPIKey });
@@ -31,6 +32,19 @@ export const IntervalMapTinkoff = {
 export type IntervalMapTinkoffType = typeof IntervalMapTinkoff;
 export type IntervalTinkoff = keyof IntervalMapTinkoffType;
 
+export const cleanCandlesFromWeekends = (candles: HistoricCandle[]) => {
+    const cleanedCandles = candles.filter((candle) => {
+        if (!candle.time) throw new Error("Ther is no time in this candle.");
+        const day = new Date(candle.time).getDay();
+
+        if (day === 0 || day === 6) return false;
+
+        return true;
+    });
+
+    return cleanedCandles;
+};
+
 export const getFigiFromTicker = async (ticker: string, classCode: ClassCode) => {
     const { instrument } = await api.instruments.getInstrumentBy({
         idType: 2,
@@ -50,8 +64,10 @@ export const getCleanedCandlesTinkoff = async (
 ) => {
     const { candles } = await api.marketdata.getCandles({
         figi: figi,
-        interval: interval,
-        ...api.helpers.fromTo(IntervalMapTinkoff[from].from), // <- удобный хелпер для получения { from, to }
+        interval: CandleInterval.CANDLE_INTERVAL_DAY,
+        ...api.helpers.fromTo("-1y"), // <- удобный хелпер для получения { from, to }
+        // interval: interval,
+        // ...api.helpers.fromTo(IntervalMapTinkoff[from].from), // <- удобный хелпер для получения { from, to }
     });
 
     // Cleaning weekends from candles
@@ -63,6 +79,8 @@ export const getCleanedCandlesTinkoff = async (
 
         return true;
     });
+
+    wrightToJson(cleanedCandles);
 
     return cleanedCandles;
 };
@@ -108,13 +126,21 @@ export const getCleanedCandlesTinkoffRest = async (
 
 export const glueCandleBatches = async (interval: IntervalTinkoff, figi: string) => {
     try {
-        const promise1 = getCleanedCandlesTinkoffRest("1m", figi, new Date(Date.now() - ms("1d")));
+        const promises = [];
 
-        const promise2 = getCleanedCandlesTinkoffRest("1m", figi);
+        for (let i = 4; i > 0; i--) {
+            const promise = getCleanedCandlesTinkoffRest(
+                interval,
+                figi,
+                new Date(Date.now() - ms(`${i}d`))
+            );
+            promises.push(promise);
+        }
+        promises.push(getCleanedCandlesTinkoffRest(interval, figi));
 
-        const [candlesBatch, candlesBatch2] = await Promise.all([promise1, promise2]);
+        const candlesBatches = await Promise.all(promises);
 
-        const gluedCandles = candlesBatch.concat(candlesBatch2);
+        const gluedCandles = candlesBatches.flat();
 
         return gluedCandles;
     } catch (error) {
@@ -123,6 +149,12 @@ export const glueCandleBatches = async (interval: IntervalTinkoff, figi: string)
 };
 
 export const getCloseValues = (candles: HistoricCandle[]) => {
+    // const close = candles.map((candle) => {
+    //     if (candle.close?.nano === undefined) return candle.close?.units;
+    //     const result = Number(candle.close?.units) + candle.close?.nano / 1e9;
+    //     return result;
+    // }) as number[];
+
     const close = candles.map((candle) => {
         if (candle.close?.nano === undefined) return candle.close?.units;
         const result = Number(candle.close?.units) + candle.close?.nano / 1e9;

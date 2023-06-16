@@ -1,7 +1,7 @@
 import { getMACD, getCleanedCandlesTinkoff, getCloseValues, getFigiFromTicker } from "./helpers.js";
 import { promises as fs } from "fs";
-import { timeFrameMap } from "./macdAndLastPrice.js";
 // types
+import { CandleInterval } from "tinkoff-invest-api/cjs/generated/marketdata.js";
 import { type ClassCode } from "../../types/classcode";
 
 export const createFolderAndWrightJson = async (ticker: string, classCode: ClassCode) => {
@@ -15,7 +15,7 @@ export const createFolderAndWrightJson = async (ticker: string, classCode: Class
     const folder = `./jsons/date-${date}`;
 
     const figi = await getFigiFromTicker("CCL", "SPBXM");
-    const candles = await getCleanedCandlesTinkoff(timeFrameMap.Minute.interval, "10m", figi);
+    const candles = await getCleanedCandlesTinkoff(CandleInterval.CANDLE_INTERVAL_DAY, "10m", figi);
     const close = await getCloseValues(candles);
     const macd = await getMACD(close);
 

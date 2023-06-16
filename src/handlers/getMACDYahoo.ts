@@ -41,13 +41,18 @@ export const getMACDYahoo = async (req: Request, res: Response) => {
         }
 
         const close = candles.close.filter((close: number) => close !== null);
+        const open = candles.open.filter((open: number) => open !== null);
         const macd = await getMACD(close);
+
+        const openAndClose = [];
+
+        for (let i = 0; i < open.length; i++) {
+            openAndClose.push({ open: open[i], close: close[i] });
+        }
 
         res.status(200).json({
             macd,
-            candles: close.map((close: any) => {
-                return { close };
-            }),
+            candles: openAndClose,
         });
     } catch (error) {
         if (error instanceof Error) {
