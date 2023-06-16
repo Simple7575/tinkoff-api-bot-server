@@ -25,5 +25,5 @@ app.listen(port, () => {
     console.log(`Listening on port ${port}`);
     bot.start({ drop_pending_updates: true });
 
-    startSchedule();
+    // startSchedule();
 });

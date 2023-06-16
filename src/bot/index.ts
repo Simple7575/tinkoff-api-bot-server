@@ -8,12 +8,9 @@ import {
     getFigiFromTicker,
     getMACD,
 } from "../utils/helpers.js";
-import { analyseFiveMinInterval } from "../utils/analyse/analyseFiveMinInterval.js";
-import { analyseHourInterval } from "../utils/analyse/analysHourInterval.js";
 // types
 import { type IntervalTinkoff } from "../utils/helpers.js";
 import { CandleInterval } from "tinkoff-invest-api/cjs/generated/marketdata.js";
-import { analyseDatInterval } from "../utils/analyse/analysDayInterval.js";
 
 if (!BotToken) throw new Error("Bot token needed.");
 if (!CHAT_ID) throw new Error("Chat ID needed, check env file.");
@@ -70,30 +67,11 @@ Close ${close.at(-1)}
     }
 });
 
-export const analysAndSendMessage = async (interval: IntervalTinkoff) => {
+export const sendMessage = async (message: string) => {
     try {
-        const messages = [];
-
-        switch (interval) {
-            case "5m":
-                const fiveMinRes = await analyseFiveMinInterval("5m");
-                messages.push(...fiveMinRes);
-                break;
-            case "1h":
-                const hourRes = await analyseHourInterval("1h");
-                messages.push(...hourRes);
-                break;
-            default:
-                const dayRes = await analyseDatInterval("1d");
-                messages.push(...dayRes);
-                break;
-        }
-
         if (!CHAT_ID) throw new Error("Chat ID needed.");
 
-        for (const message of messages) {
-            await bot.api.sendMessage(CHAT_ID, message);
-        }
+        await bot.api.sendMessage(CHAT_ID, message);
     } catch (error) {
         console.log(error);
     }
