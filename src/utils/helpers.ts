@@ -231,7 +231,7 @@ export const getCandlesYahoo = async (interval: IntervalYahoo, ticker: string) =
     }
 };
 
-export const getMACD = async (close: number[]) => {
+export const getMACD = (close: number[]) => {
     const macdInput = {
         values: close,
         fastPeriod: 12,
