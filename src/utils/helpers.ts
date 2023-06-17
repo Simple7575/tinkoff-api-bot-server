@@ -149,12 +149,6 @@ export const glueCandleBatches = async (interval: IntervalTinkoff, figi: string)
 };
 
 export const getCloseValues = (candles: HistoricCandle[]) => {
-    // const close = candles.map((candle) => {
-    //     if (candle.close?.nano === undefined) return candle.close?.units;
-    //     const result = Number(candle.close?.units) + candle.close?.nano / 1e9;
-    //     return result;
-    // }) as number[];
-
     const close = candles.map((candle) => {
         if (candle.close?.nano === undefined) return candle.close?.units;
         const result = Number(candle.close?.units) + candle.close?.nano / 1e9;
