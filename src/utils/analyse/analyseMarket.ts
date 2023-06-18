@@ -39,12 +39,12 @@ export const day = async (interval: IntervalTinkoff) => {
 
             const close = getCloseValues(candles!);
             const allValues = getAllValues(candles);
-            const quantityOfValues = 4;
+            const quantityOfValues = 2;
             const lastFourValuse = allValues.slice(allValues.length - quantityOfValues);
-            const candleAClose = lastFourValuse[0].close;
-            const candleAOpen = lastFourValuse[0].open;
-            const candleBClose = lastFourValuse[1].close;
-            const candleBOpen = lastFourValuse[1].open;
+            const candleAClose = lastFourValuse[0].close; // predposlednaya svecha close
+            const candleAOpen = lastFourValuse[0].open; // predposlednaya svecha open
+            const candleBClose = lastFourValuse[1].close; // poslednaya svecha close
+            const candleBOpen = lastFourValuse[1].open; // poslednaya svecha open
 
             const macd = getMACD(close);
             const quantityOfMacd = 4;
@@ -96,10 +96,10 @@ export const fiveMin = async (interval: IntervalTinkoff) => {
             const allValues = getAllValues(candles);
             const quantityOfValues = 4;
             const lastFourValuse = allValues.slice(allValues.length - quantityOfValues);
-            const candleAClose = lastFourValuse[0].close;
-            const candleAOpen = lastFourValuse[0].open;
-            const candleBClose = lastFourValuse[1].close;
-            const candleBOpen = lastFourValuse[1].open;
+            const candleAClose = lastFourValuse[0].close; // predposlednaya svecha close
+            const candleAOpen = lastFourValuse[0].open; // predposlednaya svecha open
+            const candleBClose = lastFourValuse[1].close; // poslednaya svecha close
+            const candleBOpen = lastFourValuse[1].open; // poslednaya svecha open
 
             const macd = getMACD(close);
             const quantityOfMacd = 4;
