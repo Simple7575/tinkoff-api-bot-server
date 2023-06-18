@@ -1,4 +1,5 @@
 import {
+    getAllValues,
     getCleanedCandlesTinkoffRest,
     getCloseValues,
     getFigiFromTicker,
@@ -14,9 +15,17 @@ const BUY = "Buy" as const;
 const SELL = "Sell" as const;
 const EMPTY = "Empty" as const;
 type DealType = typeof BUY | typeof SELL | typeof EMPTY;
+interface ResultInterface {
+    deal: DealType;
+    open: number;
+    close: number;
+    high?: number;
+    low?: number;
+    date?: string;
+}
 
 export const day = async (interval: IntervalTinkoff) => {
-    const result = new Map<string, DealType>();
+    const result = new Map<string, ResultInterface>();
     for (const ticker of tickersAndClasscodes) {
         try {
             const figi = await getFigiFromTicker(ticker.ticker, ticker.classCode);
@@ -29,12 +38,13 @@ export const day = async (interval: IntervalTinkoff) => {
             // }
 
             const close = getCloseValues(candles!);
+            const allValues = getAllValues(candles).at(-1)!;
             const macd = getMACD(close);
 
             const queantity = 4;
             const lastFourResults = macd.slice(macd.length - queantity);
             if (lastFourResults.length < queantity) {
-                result.set(ticker.ticker, EMPTY);
+                result.set(ticker.ticker, { ...allValues, deal: EMPTY });
                 continue;
             }
 
@@ -45,19 +55,18 @@ export const day = async (interval: IntervalTinkoff) => {
 
             //  3>2>1<0 то сигнал к покупке (значение1), а если 3<2<1>0 то сигнал к продаже (значение2)
             if (fourthRes > thirdRes && thirdRes > secondToLastRes && secondToLastRes < lastRes) {
-                result.set(ticker.ticker, BUY);
+                result.set(ticker.ticker, { ...allValues, deal: BUY });
             } else if (
                 fourthRes < thirdRes &&
                 thirdRes < secondToLastRes &&
                 secondToLastRes > lastRes
             ) {
-                result.set(ticker.ticker, SELL);
+                result.set(ticker.ticker, { ...allValues, deal: SELL });
             } else {
-                result.set(ticker.ticker, EMPTY);
+                result.set(ticker.ticker, { ...allValues, deal: EMPTY });
             }
         } catch (error) {
             console.log(error);
-            result.set(ticker.ticker, EMPTY);
             continue;
         }
     }
@@ -65,7 +74,7 @@ export const day = async (interval: IntervalTinkoff) => {
 };
 
 export const fiveMin = async (interval: IntervalTinkoff) => {
-    const result = new Map<string, DealType>();
+    const result = new Map<string, ResultInterface>();
     for (const ticker of tickersAndClasscodes) {
         try {
             const figi = await getFigiFromTicker(ticker.ticker, ticker.classCode);
@@ -78,12 +87,13 @@ export const fiveMin = async (interval: IntervalTinkoff) => {
             // }
 
             const close = getCloseValues(candles!);
+            const allValues = getAllValues(candles).at(-1)!;
             const macd = getMACD(close);
 
             const queantity = 4;
             const lastFourResults = macd.slice(macd.length - queantity);
             if (lastFourResults.length < queantity) {
-                result.set(ticker.ticker, EMPTY);
+                result.set(ticker.ticker, { ...allValues, deal: EMPTY });
                 continue;
             }
 
@@ -94,19 +104,18 @@ export const fiveMin = async (interval: IntervalTinkoff) => {
 
             //  3>2>1<0 то сигнал к покупке (значение1), а если 3<2<1>0 то сигнал к продаже (значение2)
             if (fourthRes > thirdRes && thirdRes > secondToLastRes && secondToLastRes < lastRes) {
-                result.set(ticker.ticker, BUY);
+                result.set(ticker.ticker, { ...allValues, deal: BUY });
             } else if (
                 fourthRes < thirdRes &&
                 thirdRes < secondToLastRes &&
                 secondToLastRes > lastRes
             ) {
-                result.set(ticker.ticker, SELL);
+                result.set(ticker.ticker, { ...allValues, deal: SELL });
             } else {
-                result.set(ticker.ticker, EMPTY);
+                result.set(ticker.ticker, { ...allValues, deal: EMPTY });
             }
         } catch (error) {
             console.log(error);
-            result.set(ticker.ticker, EMPTY);
             continue;
         }
     }
@@ -120,16 +129,31 @@ export const analyseMarket = async (interval: IntervalTinkoff) => {
     const result1 = await day("1d");
     const result2 = await fiveMin("5m");
     for (const ticker of tickersAndClasscodes) {
+        // // @ts-expect-error
+        // result1.get(ticker.ticker).open;
+        // // @ts-expect-error
+        // result1.get(ticker.ticker).close;
+        // // @ts-expect-error
+        // result2.get(ticker.ticker).open;
+        // // @ts-expect-error
+        // result2.get(ticker.ticker).close;
+
         try {
             // V bloke if mojete napisat lubuyu logiku
             // Buy
-            if (result1.get(ticker.ticker) === BUY && result2.get(ticker.ticker) === BUY) {
+            if (
+                result1.get(ticker.ticker)?.deal === BUY &&
+                result2.get(ticker.ticker)?.deal === BUY
+            ) {
                 // otpravlyaem soobshenie buy
                 await sendMessage(
                     `${interval} ${ticker.ticker} ${BUY}  Vashe Soobshenie zdes mojno propisat`
                 );
                 // Sell
-            } else if (result1.get(ticker.ticker) === SELL && result2.get(ticker.ticker) === SELL) {
+            } else if (
+                result1.get(ticker.ticker)?.deal === SELL &&
+                result2.get(ticker.ticker)?.deal === SELL
+            ) {
                 // otpravlyaem soobshenie sell
                 await sendMessage(
                     `${interval} ${ticker.ticker} ${SELL}  Vashe Soobshenie zdes mojno propisat`
