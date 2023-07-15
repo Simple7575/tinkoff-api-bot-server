@@ -8,7 +8,7 @@ import {
     getMACD,
     glueCandleBatches,
 } from "../utils/helpers.js";
-import { IntervalMapTinkoff } from "../utils/helpers.js";
+import { IntervalMapTinkoff } from "../utils/maps.js";
 // types
 import { type ClassCode } from "../../types/classcode.js";
 import { type IntervalTinkoff } from "../utils/helpers.js";

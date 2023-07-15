@@ -16,13 +16,13 @@ if (!BotToken) throw new Error("Bot token needed.");
 if (!CHAT_ID) throw new Error("Chat ID needed, check env file.");
 export const bot = new Bot(BotToken);
 
-bot.api.setMyCommands([
-    { command: "start", description: "start command" },
-    { command: "getmacdzip", description: "get macd zip of given ticker" },
-    { command: "getanalysbygiventime", description: "getanalysbygiventime" },
-    { command: "myid", description: "Sends you your ID." },
-    { command: "getmacdtocompare", description: "Get MACD data." },
-]);
+// bot.api.setMyCommands([
+//     { command: "start", description: "start command" },
+//     { command: "getmacdzip", description: "get macd zip of given ticker" },
+//     { command: "getanalysbygiventime", description: "getanalysbygiventime" },
+//     { command: "myid", description: "Sends you your ID." },
+//     { command: "getmacdtocompare", description: "Get MACD data." },
+// ]);
 
 bot.command("start", (ctx) => ctx.reply("Welcome! Up and running."));
 

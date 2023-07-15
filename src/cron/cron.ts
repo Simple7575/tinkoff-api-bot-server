@@ -1,5 +1,4 @@
 import { scheduleJob } from "node-schedule";
-import { analyseMarket } from "../utils/analyse/analyseMarket.js";
 import { analyseOneByOne } from "../utils/analyse/analyseOneByOne.js";
 
 export const startSchedule = () => {
@@ -47,11 +46,11 @@ export const startSchedule = () => {
         analyseOneByOne("1d");
     });
 
-    scheduleJob("At every weekend.", "0 0 * * 0", () => {
-        analyseOneByOne("7 days");
-    });
+    // scheduleJob("At every weekend.", "0 0 * * 0", () => {
+    //     analyseOneByOne("7 days");
+    // });
 
-    scheduleJob("At 00:00 on day-of-month 1.", "0 0 1 * *", () => {
-        analyseOneByOne("30 days");
-    });
+    // scheduleJob("At 00:00 on day-of-month 1.", "0 0 1 * *", () => {
+    //     analyseOneByOne("30 days");
+    // });
 };

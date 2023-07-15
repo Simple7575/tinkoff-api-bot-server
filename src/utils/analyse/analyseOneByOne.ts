@@ -1,15 +1,10 @@
-import {
-    getAllValues,
-    getCleanedCandlesTinkoffRest,
-    getCloseValues,
-    getFigiFromTicker,
-    getMACD,
-    glueCandleBatches,
-} from "../helpers.js";
+// prettier-ignore
+import { getAllValues, getCleanedCandlesTinkoffRest, getCloseValues, getFigiFromTicker, getMACD } from "../helpers.js";
 import { tickersAndClasscodes } from "../tickersAndClasscodes.js";
+import { lookUpInDB } from "../../db/handlers/lookUpInDB.js";
+import { sendMessage } from "../../bot/index.js";
 // types
 import { type IntervalTinkoff } from "../helpers.js";
-import { sendMessage } from "../../bot/index.js";
 
 const BUY = "Buy" as const;
 const SELL = "Sell" as const;
@@ -29,18 +24,17 @@ export const day = async (
     interval: IntervalTinkoff
 ) => {
     try {
-        const figi = await getFigiFromTicker(ticker.ticker, ticker.classCode);
-        let candles = await getCleanedCandlesTinkoffRest(interval, figi);
+        const candles = await lookUpInDB(ticker, interval);
 
         const close = getCloseValues(candles!);
         const allValues = getAllValues(candles);
         const quantityOfValues = 2;
-        const lastFourValuse = allValues.slice(allValues.length - quantityOfValues);
-        const candleAClose = lastFourValuse[0].close; // predposlednaya svecha close
-        const candleAOpen = lastFourValuse[0].open; // predposlednaya svecha open
-        const candleBClose = lastFourValuse[1].close; // poslednaya svecha close
-        const candleBOpen = lastFourValuse[1].open; // poslednaya svecha open
-        const candleBDate = lastFourValuse[1].date; // poslednaya svecha open
+        const lastFourValues = allValues.slice(allValues.length - quantityOfValues);
+        const candleAClose = lastFourValues[0].close; // predposlednaya svecha close
+        const candleAOpen = lastFourValues[0].open; // predposlednaya svecha open
+        const candleBClose = lastFourValues[1].close; // poslednaya svecha close
+        const candleBOpen = lastFourValues[1].open; // poslednaya svecha open
+        const candleBDate = lastFourValues[1].date; // poslednaya svecha open
 
         const macd = getMACD(close);
         const quantityOfMacd = 4;
@@ -56,6 +50,12 @@ export const day = async (
 
         //  3>2>1<0 то сигнал к покупке (значение1), а если 3<2<1>0 то сигнал к продаже (значение2)
         if (fourthRes > thirdRes && thirdRes > secondToLastRes && secondToLastRes < lastRes) {
+            // console.log(new Date()) // sechas
+            // console.log(new Date().getTime()) // sechas v milisekundax
+            // console.log(new Date(candleBDate)) // data posledney svechi
+            // console.log(new Date(candleBDate).getTime()) // data posledney svechi v milisekundax
+            // dlya sravnenia dvux dat nujno perevesti v milisekundi eto unix vremya
+
             return BUY;
         } else if (
             fourthRes < thirdRes &&
@@ -76,18 +76,17 @@ export const fiveMin = async (
     interval: IntervalTinkoff
 ) => {
     try {
-        const figi = await getFigiFromTicker(ticker.ticker, ticker.classCode);
-        let candles = await getCleanedCandlesTinkoffRest(interval, figi);
+        const candles = await lookUpInDB(ticker, interval);
 
         const close = getCloseValues(candles!);
         const allValues = getAllValues(candles);
         const quantityOfValues = 2;
-        const lastFourValuse = allValues.slice(allValues.length - quantityOfValues);
-        const candleAClose = lastFourValuse[0].close; // predposlednaya svecha close
-        const candleAOpen = lastFourValuse[0].open; // predposlednaya svecha open
-        const candleBClose = lastFourValuse[1].close; // poslednaya svecha close
-        const candleBOpen = lastFourValuse[1].open; // poslednaya svecha open
-        const candleBDate = lastFourValuse[1].date; // poslednaya svecha open
+        const lastFourValues = allValues.slice(allValues.length - quantityOfValues);
+        const candleAClose = lastFourValues[0].close; // predposlednaya svecha close
+        const candleAOpen = lastFourValues[0].open; // predposlednaya svecha open
+        const candleBClose = lastFourValues[1].close; // poslednaya svecha close
+        const candleBOpen = lastFourValues[1].open; // poslednaya svecha open
+        const candleBDate = lastFourValues[1].date; // poslednaya svecha open
 
         const macd = getMACD(close);
         const quantityOfMacd = 4;
@@ -103,6 +102,12 @@ export const fiveMin = async (
 
         //  3>2>1<0 то сигнал к покупке (значение1), а если 3<2<1>0 то сигнал к продаже (значение2)
         if (fourthRes > thirdRes && thirdRes > secondToLastRes && secondToLastRes < lastRes) {
+            // console.log(new Date()) // sechas
+            // console.log(new Date().getTime()) // sechas v milisekundax
+            // console.log(new Date(candleBDate)) // data posledney svechi
+            // console.log(new Date(candleBDate).getTime()) // data posledney svechi v milisekundax
+            // dlya sravnenia dvux dat nujno perevesti v milisekundi eto unix vremya
+
             return BUY;
         } else if (
             fourthRes < thirdRes &&

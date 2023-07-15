@@ -6,9 +6,9 @@ const config: Config = {
     testMatch: ["**/**/*.test.ts"],
     verbose: true,
     forceExit: true,
-    clearMocks: true,
-    resetMocks: true,
-    restoreMocks: true,
+    // clearMocks: true,
+    // resetMocks: true,
+    // restoreMocks: true,
     resolver: "jest-ts-webcompat-resolver",
 };
 

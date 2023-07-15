@@ -6,28 +6,13 @@ import axios from "axios";
 import ms from "ms";
 
 import { TinkofAPIKey } from "../envConstants.js";
+import { IntervalMapTinkoff } from "./maps.js";
 // types
 import { type ClassCode } from "../../types/classcode";
 import { wrightToJson } from "./wrightToJson.js";
 
 if (!TinkofAPIKey) throw new Error("Tinkoff API key needed.");
 export const api = new TinkoffInvestApi({ token: TinkofAPIKey });
-
-export const IntervalMapTinkoff = {
-    "1m": { interval: "CANDLE_INTERVAL_1_MIN", from: "-1d" },
-    "2m": { interval: "CANDLE_INTERVAL_2_MIN", from: "-1d" },
-    "3m": { interval: "CANDLE_INTERVAL_3_MIN", from: "-1d" },
-    "5m": { interval: "CANDLE_INTERVAL_5_MIN", from: "-1d" },
-    "10m": { interval: "CANDLE_INTERVAL_10_MIN", from: "-1d" },
-    "15m": { interval: "CANDLE_INTERVAL_15_MIN", from: "-1d" },
-    "30m": { interval: "CANDLE_INTERVAL_30_MIN", from: "-2 days" },
-    "1h": { interval: "CANDLE_INTERVAL_HOUR", from: "-7 days" },
-    "2h": { interval: "CANDLE_INTERVAL_2_HOUR", from: "-30 days" },
-    "4h": { interval: "CANDLE_INTERVAL_4_HOUR", from: "-30 days" },
-    "1d": { interval: "CANDLE_INTERVAL_DAY", from: "-1y" },
-    "7 days": { interval: "CANDLE_INTERVAL_WEEK", from: "-2y" },
-    "30 days": { interval: "CANDLE_INTERVAL_MONTH", from: "-10y" },
-};
 
 export type IntervalMapTinkoffType = typeof IntervalMapTinkoff;
 export type IntervalTinkoff = keyof IntervalMapTinkoffType;
@@ -57,6 +42,18 @@ export const getFigiFromTicker = async (ticker: string, classCode: ClassCode) =>
     return instrument.figi;
 };
 
+export const getInstument = async (ticker: string, classCode: ClassCode) => {
+    const { instrument } = await api.instruments.getInstrumentBy({
+        idType: 2,
+        classCode,
+        id: ticker,
+    });
+
+    if (!instrument) throw new Error("Ther is no instrument");
+
+    return instrument;
+};
+
 export const getCleanedCandlesTinkoff = async (
     interval: CandleInterval,
     from: IntervalTinkoff,
@@ -64,8 +61,9 @@ export const getCleanedCandlesTinkoff = async (
 ) => {
     const { candles } = await api.marketdata.getCandles({
         figi: figi,
-        interval: CandleInterval.CANDLE_INTERVAL_DAY,
-        ...api.helpers.fromTo("-1y"), // <- удобный хелпер для получения { from, to }
+        // @ts-expect-error
+        interval: "CANDLE_INTERVAL_30_MIN",
+        ...api.helpers.fromTo("-1d"), // <- удобный хелпер для получения { from, to }
         // interval: interval,
         // ...api.helpers.fromTo(IntervalMapTinkoff[from].from), // <- удобный хелпер для получения { from, to }
     });
@@ -88,7 +86,8 @@ export const getCleanedCandlesTinkoff = async (
 export const getCleanedCandlesTinkoffRest = async (
     interval: IntervalTinkoff,
     figi: string,
-    base = new Date()
+    base = new Date(),
+    ticker?: string
 ) => {
     console.log(api.helpers.fromTo(IntervalMapTinkoff[interval].from, base));
 
