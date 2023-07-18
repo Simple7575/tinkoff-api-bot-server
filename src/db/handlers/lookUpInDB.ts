@@ -31,12 +31,13 @@ export const saveCandles = async (
 
 export const lookUpInDB = async (
     ticker: (typeof tickersAndClasscodes)[number],
-    interval: IntervalTinkoff
+    interval: IntervalTinkoff,
+    shceduledInterval: IntervalTinkoff
 ): Promise<HistoricCandle[]> => {
     const existingCandles = await CandlesModel.findOne({ ticker: ticker.ticker });
 
     if (!existingCandles) {
-        console.log("Save", `candles.${interval}`);
+        console.log("Save", `candles.${interval}`, "API call");
         const figi = await getFigiFromTicker(ticker.ticker, ticker.classCode);
         const candles = await getCleanedCandlesTinkoffRest(interval, figi);
         await saveCandles(ticker.ticker, interval, candles);
@@ -46,7 +47,7 @@ export const lookUpInDB = async (
 
         if (existingCandles.candles[interval].length === 0) {
             // if candles of given interval in db are not exist yet, get candles from tinkoff and update candles in db
-            console.log("Update", `candles.${interval}`);
+            console.log("Update", `candles.${interval}`, "API call");
             const figi = await getFigiFromTicker(ticker.ticker, ticker.classCode);
             const candles = await getCleanedCandlesTinkoffRest(interval, figi);
             await existingCandles.updateOne({ $set: { [field]: candles } });
@@ -60,13 +61,13 @@ export const lookUpInDB = async (
                 // if they are same just return candles
                 // else push ne candle to db and return candles
                 // ----------for now just return candles from tinkoff with warrning
-                console.warn("Last candle had no time in it.", ticker.ticker, interval);
+                console.warn("Last candle had no time in it.", ticker.ticker, interval, "API call");
                 const figi = await getFigiFromTicker(ticker.ticker, ticker.classCode);
                 const candles = await getCleanedCandlesTinkoffRest(interval, figi);
                 return candles;
             }
 
-            const timeAndInterval = new Date(time).getMilliseconds() + IntervalToMsMap[interval];
+            const timeAndInterval = new Date(time).getTime() + IntervalToMsMap[interval];
             const now = Date.now();
             console.log(interval, new Date(time));
             console.log(interval, new Date());
@@ -74,14 +75,12 @@ export const lookUpInDB = async (
             // update candles in db and return updated candles
             // else return candles from db
             if (now > timeAndInterval) {
-                console.log("Greater");
+                console.log("Greater", "API call");
                 const figi = await getFigiFromTicker(ticker.ticker, ticker.classCode);
                 const candles = await getCleanedCandlesTinkoffRest(interval, figi);
                 const newCandleTime = candles.at(-1)?.time!;
                 // this part of code need test coverage
-                if (
-                    new Date(time).getMilliseconds() === new Date(newCandleTime).getMilliseconds()
-                ) {
+                if (new Date(time).getTime() === new Date(newCandleTime).getTime()) {
                     console.log("Candles are the same");
                     return candles;
                 }
@@ -108,7 +107,7 @@ export const lookUpInDB = async (
                     return updated!.candles[interval];
                 }
             } else {
-                console.log("Looked from db");
+                console.log("DB call");
                 return existingCandles.candles[interval];
             }
         }

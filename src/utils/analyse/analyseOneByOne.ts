@@ -21,10 +21,11 @@ interface ResultInterface {
 
 export const day = async (
     ticker: (typeof tickersAndClasscodes)[number],
-    interval: IntervalTinkoff
+    interval: IntervalTinkoff,
+    shceduledInterval: IntervalTinkoff
 ) => {
     try {
-        const candles = await lookUpInDB(ticker, interval);
+        const candles = await lookUpInDB(ticker, interval, shceduledInterval);
 
         const close = getCloseValues(candles!);
         const allValues = getAllValues(candles);
@@ -73,10 +74,11 @@ export const day = async (
 
 export const fiveMin = async (
     ticker: (typeof tickersAndClasscodes)[number],
-    interval: IntervalTinkoff
+    interval: IntervalTinkoff,
+    shceduledInterval: IntervalTinkoff
 ) => {
     try {
-        const candles = await lookUpInDB(ticker, interval);
+        const candles = await lookUpInDB(ticker, interval, shceduledInterval);
 
         const close = getCloseValues(candles!);
         const allValues = getAllValues(candles);
@@ -129,8 +131,8 @@ export const analyseOneByOne = async (interval: IntervalTinkoff) => {
             // mojno kopirovat funkcii s verxu nazvat kak ugodno i vizvat ix sdes i poluchit rezultat kak nije 👇
             // v skobkax pishem jelaemi interval svechei
             // validni interval "1m" | "2m" | "3m" | "5m" | "10m" | "15m" | "30m" | "1h" | "2h" | "4h" | "1d" | "7 days" | "30 days"
-            const result1 = await day(ticker, "1d");
-            const result2 = await fiveMin(ticker, "5m");
+            const result1 = await day(ticker, "1d", interval);
+            const result2 = await fiveMin(ticker, "5m", interval);
 
             // V bloke if mojete napisat lubuyu logiku
             // Buy
