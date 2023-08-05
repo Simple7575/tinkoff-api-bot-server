@@ -8,7 +8,7 @@ import ms from "ms";
 import { TinkofAPIKey } from "../envConstants.js";
 import { IntervalMapTinkoff } from "./maps.js";
 // types
-import { type ClassCode } from "../../types/classcode";
+import { type ClassCode } from "../../types/classcode.js";
 import { wrightToJson } from "./wrightToJson.js";
 
 if (!TinkofAPIKey) throw new Error("Tinkoff API key needed.");
@@ -161,16 +161,16 @@ export const getAllValues = (candles: HistoricCandle[]) => {
     const values = [];
 
     for (const candle of candles) {
-        if (candle.open?.nano && candle.close?.nano && candle.high?.nano && candle.low?.nano) {
-            const result = {
-                open: Number(candle.open?.units) + candle.open?.nano / 1e9,
-                close: Number(candle.close?.units) + candle.close?.nano / 1e9,
-                high: Number(candle.high?.units) + candle.high?.nano / 1e9,
-                low: Number(candle.low?.units) + candle.low?.nano / 1e9,
-                date: new Date(candle.time!).toLocaleString(),
-            };
-            values.push(result);
-        }
+        // nano can be zero and zero is falsy thats why we had bug in folowing logic
+        // if (candle.open?.nano && candle.close?.nano && candle.high?.nano && candle.low?.nano) {
+        const result = {
+            open: Number(candle.open?.units) + candle.open?.nano! / 1e9,
+            close: Number(candle.close?.units) + candle.close?.nano! / 1e9,
+            high: Number(candle.high?.units) + candle.high?.nano! / 1e9,
+            low: Number(candle.low?.units) + candle.low?.nano! / 1e9,
+            date: new Date(candle.time!),
+        };
+        values.push(result);
     }
 
     return values;
